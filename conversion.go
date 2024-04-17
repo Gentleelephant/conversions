@@ -4,7 +4,6 @@ import (
 	"conversions/template"
 	"conversions/utils"
 	"fmt"
-	"github.com/go-kit/kit/log/level"
 	_ "k8s.io/api/core/v1"
 	 "log"
 	"net/http"
@@ -40,7 +39,8 @@ func alertHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// 读取请求体
 	 sendLightning := make([]Lightning, len(data.Alerts))
-
+	 fmt.println(data)
+     fmt.Println(data.tostring())
 	for i, alert := range data.Alerts {
 		sendLightning[i].alertName = alert.Labels["alertname"]
 		alert.ID = utils.Hash(alert)
