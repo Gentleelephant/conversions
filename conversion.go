@@ -5,7 +5,7 @@ import (
 	"conversions/utils"
 	"fmt"
 	_ "k8s.io/api/core/v1"
-	 "log"
+	"log"
 	"net/http"
 )
 
@@ -39,8 +39,9 @@ func alertHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// 读取请求体
 	 sendLightning := make([]Lightning, len(data.Alerts))
-	 fmt.println(data)
-     fmt.Println(data.tostring())
+	 fmt.Print(data)
+	 fmt.Sprintf("%v", data)
+
 	for i, alert := range data.Alerts {
 		sendLightning[i].alertName = alert.Labels["alertname"]
 		alert.ID = utils.Hash(alert)

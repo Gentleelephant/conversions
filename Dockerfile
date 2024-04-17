@@ -13,6 +13,7 @@ ENV GO111MODULE=on \
 WORKDIR /dist
 COPY conversion.go conversion.go
 COPY constants/ constants/
+COPY template/ template/
 COPY utils/ utils/
 COPY go.mod .
 COPY go.sum .
