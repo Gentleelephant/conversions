@@ -10,7 +10,7 @@ ENV GO111MODULE=on \
 # 移动到工作目录：/home/www/goWebBlog 这个目录 是你项目代码 放在linux上
 # 这是我的代码跟目录
 # 你们得修改成自己的
-WORKDIR /dist
+WORKDIR /app
 COPY conversion.go conversion.go
 COPY constants/ constants/
 COPY template/ template/
@@ -22,8 +22,8 @@ RUN go mod download
 # 将代码复制到容器中
 
 # 将我们的代码编译成二进制可执行文件  可执行文件名为 app
-RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build conversion.go
+RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o /app/conversion conversion.go
 
 
 # 启动容器时运行的命令
-CMD ["./conversion"]
+CMD ["./app/conversion"]
