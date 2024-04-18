@@ -11,12 +11,7 @@ ENV GO111MODULE=on \
 # 这是我的代码跟目录
 # 你们得修改成自己的
 WORKDIR /app
-COPY conversion.go conversion.go
-COPY constants/ constants/
-COPY template/ template/
-COPY utils/ utils/
-COPY go.mod .
-COPY go.sum .
+COPY . .
 RUN go mod download
 
 # 将代码复制到容器中
@@ -25,5 +20,10 @@ RUN go mod download
 RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o conversion conversion.go
 RUN chmod +x /app/conversion
 
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/conversion .
+RUN chmod +x conversion
 # 启动容器时运行的命令
-CMD ["sh", "-c", "/app/conversion"]
+CMD ["./conversion"]
