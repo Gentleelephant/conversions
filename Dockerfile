@@ -26,4 +26,4 @@ RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o conversion conversion.go
 
 
 # 启动容器时运行的命令
-CMD ["sh"]
+CMD ["sh", "-c", "/app/conversion"]
