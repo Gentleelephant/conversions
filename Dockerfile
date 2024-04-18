@@ -22,8 +22,8 @@ RUN go mod download
 # 将代码复制到容器中
 
 # 将我们的代码编译成二进制可执行文件  可执行文件名为 app
-RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o /app/conversion conversion.go
+RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o conversion conversion.go
 
 
 # 启动容器时运行的命令
-CMD ["./app/conversion"]
+CMD ["sh"]
