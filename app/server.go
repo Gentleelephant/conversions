@@ -139,8 +139,8 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 	//sendToFirefly(sendLightning)
 
 	// 返回成功响应
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "Alert received and forwarded to Firefly")
+	resp.WriteHeader(http.StatusOK)
+	fmt.Fprint(resp, "Alert received and forwarded to Firefly")
 }
 
 // 发送数据给萤火虫
