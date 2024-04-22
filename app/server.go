@@ -68,6 +68,7 @@ func NewServerCommand() *cobra.Command {
 			return Run()
 		},
 	}
+	 fmt.Printf("2")
 	AddFlags(cmd.Flags())
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 
@@ -75,7 +76,7 @@ func NewServerCommand() *cobra.Command {
 }
 
 func Run() error {
-
+ fmt.Printf("3")
 	pflag.VisitAll(func(flag *pflag.Flag) {
 		glog.Errorf("FLAG: --%s=%q", flag.Name, flag.Value)
 	})
@@ -83,7 +84,7 @@ func Run() error {
 }
 
 func httpServer() error {
-
+ fmt.Printf("4")
 	container := restful.NewContainer()
 	ws := new(restful.WebService)
 	ws.Path("").
