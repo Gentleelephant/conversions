@@ -1,4 +1,4 @@
-package conversions
+package main
 
 import (
 	"conversions/template"
