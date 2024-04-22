@@ -12,6 +12,7 @@ ENV GO111MODULE=on \
 # 你们得修改成自己的
 WORKDIR /app
 COPY . .
+RUN go mod tidy
 RUN go mod download
 
 # 将代码复制到容器中
