@@ -33,7 +33,6 @@ import (
 
 var (
 	port          int
-	goroutinesNum int
 
 )
 
@@ -62,7 +61,7 @@ func AddFlags(fs *pflag.FlagSet) {
 
 func NewServerCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "alert-webhook",
+		Use:  "webhook",
 		Long: `The ks alert webhook to conversion event`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return Run()
