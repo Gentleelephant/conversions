@@ -83,7 +83,7 @@ func Run() error {
 }
 
 func httpServer() error {
-
+    log.Println("3333333")
 	container := restful.NewContainer()
 	ws := new(restful.WebService)
 	ws.Path("").
