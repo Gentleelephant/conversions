@@ -83,7 +83,7 @@ func Run() error {
 }
 
 func httpServer() error {
- log.Println("4")
+
 	container := restful.NewContainer()
 	ws := new(restful.WebService)
 	ws.Path("").
@@ -116,7 +116,7 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 		}
 		return
 	}
-
+ log.Println("4444")
 		// Parse alerts sent through Alertmanager webhook, more detail please refer to
 	// https://github.com/prometheus/alertmanager/blob/master/template/template.go#L231
 	data := template.Data{}
@@ -126,7 +126,7 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 	}
 	// 读取请求体
 	 sendLightning := make([]Lightning, len(data.Alerts))
-	 fmt.Print(data)
+	 log.Print(data)
 	 fmt.Sprintf("%v", data)
 
 	for i, alert := range data.Alerts {
