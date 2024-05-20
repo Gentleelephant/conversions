@@ -1,25 +1,29 @@
 # Build the manager binary
-FROM golang:alpine
+FROM golang:1.21 as builder
 
-ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64 \
-        GOPROXY="https://goproxy.cn,direct"
+ARG GOPROXY
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.sum Makefile main.go ./
+COPY app app/
+COPY constants constants/
+COPY utils utils/
 
-# 移动到工作目录：/home/www/goWebBlog 这个目录 是你项目代码 放在linux上
-# 这是我的代码跟目录
-# 你们得修改成自己的
-WORKDIR /app
-COPY . .
-RUN go mod tidy
-RUN go mod download
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN GOPROXY=$GOPROXY go mod download
 
-# 将代码复制到容器中
+ARG GOLDFLAGS
 
-# 将我们的代码编译成二进制可执行文件  可执行文件名为 app
-RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -a -o conversion .
-RUN chmod +x app
+# Build
+RUN CGO_ENABLED=0 GO111MODULE=on go build -a -ldflags="${GOLDFLAGS}" -o conversion main.go
 
-# 启动容器时运行的命令
-CMD ["./conversion"]
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/conversion .
+#COPY --from=builder /workspace/bin/swagger-ui/dist bin/swagger-ui/dist
+USER nonroot:nonroot
+
+ENTRYPOINT ["/conversion"]
