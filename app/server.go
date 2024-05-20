@@ -17,8 +17,7 @@ limitations under the License.
 package app
 
 import (
-	"conversions/template"
-	"conversions/utils"
+   "github.com/prometheus/alertmanager/template"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -29,6 +28,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 var (
@@ -119,33 +119,45 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
  log.Println("4444")
 		// Parse alerts sent through Alertmanager webhook, more detail please refer to
 	// https://github.com/prometheus/alertmanager/blob/master/template/template.go#L231
-	data := template.Data{}
+	var data  []Lightning
 	if err := json.Unmarshal(body, &data); err != nil {
 		log.Printf(err.Error())
 		return
 	}
 	// 读取请求体
-	 sendLightning := make([]Lightning, len(data.Alerts))
 	 log.Print(data)
 	 fmt.Sprintf("%v", data)
 
-	for i, alert := range data.Alerts {
-		sendLightning[i].alertName = alert.Labels["alertname"]
-		alert.ID = utils.Hash(alert)
+	for _, item := range data {
+		var send template.Data
+		    send.Receiver = "Default"
+			send.Status = "firing"
+			var alert template.Alert
+			alert.Status = "firing"
+			alert.Labels =template.KV{
+				"alertName":      item.alertName,
+				"alertDesc":      item.alertDesc,
+				"alertId":       item.alertId,
+				"alertMsgId":      item.alertMsgId,
+				"applyType":            item.applyType,
+			}
 
+			alert.Fingerprint = "83fb3d34d52108b0"
+			alert.EndsAt, _ = time.Parse("2006-01-02", "0001-01-01T00:00:00Z")
+			send.Alerts = append(send.Alerts, alert)
+			sendToGlowworm(send)
 	}
 
-	// 发送给萤火虫
-	//sendToFirefly(sendLightning)
 
 	// 返回成功响应
 	resp.WriteHeader(http.StatusOK)
 	fmt.Fprint(resp, "Alert received and forwarded to Firefly")
 }
 
-// 发送数据给萤火虫
-//func sendToFirefly(data map[string]interface{}) {
-//	// 实现发送逻辑，将数据发送给萤火虫
-//	// 例如使用HTTP POST请求发送数据给萤火虫的API
-//}
+//发送数据给萤火虫
+func sendToGlowworm(data template.Data) {
+	// 实现发送逻辑，将数据发送给萤火虫
+	// TODO
+	// 例如使用HTTP POST请求发送数据给萤火虫的API
+}
 
