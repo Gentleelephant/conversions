@@ -67,7 +67,6 @@ func NewServerCommand() *cobra.Command {
 			return Run()
 		},
 	}
-	 log.Println("2")
 	AddFlags(cmd.Flags())
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 
@@ -75,7 +74,6 @@ func NewServerCommand() *cobra.Command {
 }
 
 func Run() error {
- log.Println("3")
 	pflag.VisitAll(func(flag *pflag.Flag) {
 		glog.Errorf("FLAG: --%s=%q", flag.Name, flag.Value)
 	})
@@ -83,7 +81,6 @@ func Run() error {
 }
 
 func httpServer() error {
-    log.Println("3333333")
 	container := restful.NewContainer()
 	ws := new(restful.WebService)
 	ws.Path("").
@@ -116,7 +113,6 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 		}
 		return
 	}
- log.Println("4444")
 		// Parse alerts sent through Alertmanager webhook, more detail please refer to
 	// https://github.com/prometheus/alertmanager/blob/master/template/template.go#L231
 	var data  []Lightning
