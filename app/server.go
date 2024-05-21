@@ -130,8 +130,8 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 	// https://github.com/prometheus/alertmanager/blob/master/template/template.go#L231
 	var alert template.Data
 	var data []Lightning
-	if err := json.Unmarshal(body, &alert); err != nil {
-		log.Printf(err.Error())
+	if err = json.Unmarshal(body, &alert); err != nil {
+		log.Println(err)
 		return
 	}
 
@@ -146,6 +146,12 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 		ligthning.AlertMsgId = generateUniqueMsgID(item.Labels)
 		if item.Status == "firing" {
 			ligthning.AlertLevel = strings.ToUpper(item.Labels["severity"])
+			if ligthning.AlertLevel == "ERROR" {
+				ligthning.AlertLevel = "CRITICAL"
+			}
+		}
+		if ligthning.AlertLevel == "" {
+			ligthning.AlertLevel = "INFO"
 		}
 		data = append(data, ligthning)
 	}
@@ -167,14 +173,14 @@ func sendToGlowworm(data []Lightning) {
 
 	url, err := url2.Parse(address)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println(err)
 		return
 	}
 	address = url.Scheme + "://" + url.Host + url.Path
 
 	for _, item := range data {
 
-		fmt.Println("data: ", item)
+		fmt.Printf("data: %+v\n", item)
 
 		dataByte, err := json.Marshal(item)
 		if err != nil {
@@ -190,11 +196,22 @@ func sendToGlowworm(data []Lightning) {
 		request.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 		// 发送请求
-		_, err = client.Do(request)
+		resp, err := client.Do(request)
 		if err != nil {
-			log.Printf(err.Error())
+			log.Println(err)
 			return
 		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		// 打印响应
+		fmt.Printf("Response: %s\n", string(body))
+		resp.Body.Close()
+
 	}
 
 }
