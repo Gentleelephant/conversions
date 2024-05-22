@@ -38,10 +38,11 @@ import (
 )
 
 var (
-	port     int
-	address  string
-	alertId  string
-	alertKey string
+	port      int
+	address   string
+	alertId   string
+	alertKey  string
+	applyType string
 )
 
 type AlertNotify struct {
@@ -67,6 +68,7 @@ func AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&address, "address", "", "The address of send the data to")
 	fs.StringVar(&alertId, "alertId", "", "The alert id")
 	fs.StringVar(&alertKey, "alertKey", "", "The alert key")
+	fs.StringVar(&applyType, "applyType", "custom", "The apply type")
 }
 
 func NewServerCommand() *cobra.Command {
