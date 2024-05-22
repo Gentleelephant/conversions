@@ -54,7 +54,7 @@ type AlertNotify struct {
 type Lightning struct {
 	AlertName   string       `json:"alertName"`
 	AlertDesc   string       `json:"alertDesc"`
-	AlertLevel  string       `json:"alertLevel"`
+	AlertLevel  string       `json:"alertLevel,omitempty"`
 	AlertStatus string       `json:"alertStatus"`
 	ApplyType   string       `json:"applyType"`
 	AlertNotify *AlertNotify `json:"alertNotify,omitempty"`
@@ -146,15 +146,18 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 		ligthning.AlertKey = alertKey
 		ligthning.ApplyType = applyType // preset or custom
 		ligthning.AlertMsgId = generateUniqueMsgID(item.Labels)
+		if ligthning.AlertLevel == "" {
+			ligthning.AlertLevel = "INFO"
+		}
 		if item.Status == "firing" {
 			ligthning.AlertLevel = strings.ToUpper(item.Labels["severity"])
 			if ligthning.AlertLevel == "ERROR" {
 				ligthning.AlertLevel = "CRITICAL"
 			}
+		} else {
+			ligthning.AlertLevel = ""
 		}
-		if ligthning.AlertLevel == "" {
-			ligthning.AlertLevel = "INFO"
-		}
+
 		data = append(data, ligthning)
 	}
 
