@@ -144,7 +144,7 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 		ligthning.AlertStatus = item.Status
 		ligthning.AlertId = alertId
 		ligthning.AlertKey = alertKey
-		ligthning.ApplyType = "preset" // preset or custom
+		ligthning.ApplyType = applyType // preset or custom
 		ligthning.AlertMsgId = generateUniqueMsgID(item.Labels)
 		if item.Status == "firing" {
 			ligthning.AlertLevel = strings.ToUpper(item.Labels["severity"])
