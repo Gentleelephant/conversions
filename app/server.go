@@ -185,8 +185,6 @@ func sendToGlowworm(data []Lightning) {
 
 	for _, item := range data {
 
-		fmt.Printf("data: %+v\n", item)
-
 		dataByte, err := json.Marshal(item)
 		if err != nil {
 			log.Fatal(err)
