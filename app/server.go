@@ -198,7 +198,7 @@ func send(address string, data []Alert) {
 
 	for _, item := range data {
 
-		fmt.Printf("item: %+v", item)
+		fmt.Printf("item: %+v\n", item)
 
 		dataByte, err := json.Marshal(item)
 		if err != nil {
