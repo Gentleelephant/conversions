@@ -18,8 +18,6 @@ package app
 
 import (
 	"bytes"
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -32,43 +30,37 @@ import (
 	"log"
 	"net/http"
 	url2 "net/url"
-	"sort"
-	"strings"
 	"time"
 )
 
 var (
-	port      int
-	address   string
-	alertId   string
-	alertKey  string
-	applyType string
+	port          int
+	mergeKey      string
+	identifyKey   string
+	networkDomain string
+	notifyAddress []string
 )
 
-type AlertNotify struct {
-	emails  []string
-	mobiles []string
-	wechats []string
-}
-
-type Lightning struct {
-	AlertName   string       `json:"alertName"`
-	AlertDesc   string       `json:"alertDesc"`
-	AlertLevel  string       `json:"alertLevel,omitempty"`
-	AlertStatus string       `json:"alertStatus"`
-	ApplyType   string       `json:"applyType"`
-	AlertNotify *AlertNotify `json:"alertNotify,omitempty"`
-	AlertKey    string       `json:"alertKey"`
-	AlertId     string       `json:"alertId"`
-	AlertMsgId  string       `json:"alertMsgId"`
+type Alert struct {
+	Name          string                   `json:"name"`
+	Severity      uint                     `json:"severity"`
+	Description   string                   `json:"description"`
+	OccurTime     int64                    `json:"occur_time"`
+	EntityName    string                   `json:"entity_name"`
+	EntityAddr    string                   `json:"entity_addr,omitempty"`
+	MergedKey     string                   `json:"merged_key,omitempty"`
+	IdentifyKey   string                   `json:"identify_key,omitempty"`
+	Type          string                   `json:"type"`
+	NetworkDomain string                   `json:"networkDomain"`
+	Properties    []map[string]interface{} `json:"properties,omitempty"`
 }
 
 func AddFlags(fs *pflag.FlagSet) {
 	fs.IntVar(&port, "port", 8080, "The port which the server listen, default 8080")
-	fs.StringVar(&address, "address", "", "The address of send the data to")
-	fs.StringVar(&alertId, "alertId", "", "The alert id")
-	fs.StringVar(&alertKey, "alertKey", "", "The alert key")
-	fs.StringVar(&applyType, "applyType", "custom", "The apply type")
+	fs.StringVar(&mergeKey, "mergeKey", "entity_name,name", "The merge key")
+	fs.StringVar(&identifyKey, "identifyKey", "", "The identify key")
+	fs.StringVar(&networkDomain, "networkDomain", "defaultZone", "The network domain")
+	fs.StringSliceVar(&notifyAddress, "notifyAddress", []string{}, "The addresses of send the data to")
 }
 
 func NewServerCommand() *cobra.Command {
@@ -89,6 +81,11 @@ func Run() error {
 	pflag.VisitAll(func(flag *pflag.Flag) {
 		glog.Errorf("FLAG: --%s=%q", flag.Name, flag.Value)
 	})
+
+	fmt.Println("notifyAddress:", notifyAddress)
+	fmt.Println("mergeKey:", mergeKey)
+	fmt.Println("identifyKey:", identifyKey)
+	fmt.Println("networkDomain:", networkDomain)
 
 	log.Println("Starting conversions server...")
 
@@ -131,47 +128,65 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 	// Parse alerts sent through Alertmanager webhook, more detail please refer to
 	// https://github.com/prometheus/alertmanager/blob/master/template/template.go#L231
 	var alert template.Data
-	var data []Lightning
+	var data []Alert
 	if err = json.Unmarshal(body, &alert); err != nil {
 		log.Println(err)
 		return
 	}
 
-	for _, item := range alert.Alerts {
-		ligthning := Lightning{}
-		ligthning.AlertName = item.Labels["alertname"]
-		ligthning.AlertDesc = item.Annotations["message"]
-		ligthning.AlertStatus = item.Status
-		ligthning.AlertId = alertId
-		ligthning.AlertKey = alertKey
-		ligthning.ApplyType = applyType // preset or custom
-		ligthning.AlertMsgId = generateUniqueMsgID(item.Labels)
-		if ligthning.AlertLevel == "" {
-			ligthning.AlertLevel = "INFO"
-		}
-		if item.Status == "firing" {
-			ligthning.AlertLevel = strings.ToUpper(item.Labels["severity"])
-			if ligthning.AlertLevel == "ERROR" {
-				ligthning.AlertLevel = "CRITICAL"
-			}
-		} else {
-			ligthning.AlertLevel = ""
-		}
+	fmt.Println("alert:", alert)
 
-		data = append(data, ligthning)
+	for _, item := range alert.Alerts {
+		currentAlert := Alert{}
+		currentAlert.Name = item.Labels["alertname"]
+		currentAlert.Description = item.Annotations["message"]
+
+		if currentAlert.EntityName == "" {
+			if item.Labels["node"] != "" {
+				currentAlert.EntityName = item.Labels["node"]
+				currentAlert.EntityAddr = item.Labels["host_ip"]
+			} else if item.Labels["pod"] != "" {
+				currentAlert.EntityName = fmt.Sprintf("%s/%s", item.Labels["namespace"], item.Labels["pod"])
+				currentAlert.EntityAddr = item.Labels["instance"]
+			}
+
+		}
+		currentAlert.NetworkDomain = networkDomain
+		currentAlert.Type = item.Labels["alerttype"]
+		if item.Labels["severity"] == "critical" {
+			currentAlert.Severity = 3
+		} else if item.Labels["severity"] == "error" {
+			currentAlert.Severity = 2
+		} else if item.Labels["severity"] == "warning" {
+			currentAlert.Severity = 1
+		} else if item.Labels["severity"] == "info" {
+			currentAlert.Severity = 0
+		}
+		currentAlert.OccurTime = item.StartsAt.UnixMilli()
+		currentAlert.MergedKey = mergeKey
+		currentAlert.IdentifyKey = identifyKey
+
+		data = append(data, currentAlert)
 	}
 
 	sendToGlowworm(data)
 
 	// 返回成功响应
 	resp.WriteHeader(http.StatusOK)
-	fmt.Fprint(resp, "Alert received and forwarded to Firefly")
+	fmt.Fprint(resp, "SUCCESS")
 }
 
-// 发送数据给萤火虫
-func sendToGlowworm(data []Lightning) {
-	// 实现发送逻辑，将数据发送给萤火虫
-	// 例如使用HTTP POST请求发送数据给萤火虫的API
+// 发送数据
+func sendToGlowworm(data []Alert) {
+
+	for _, address := range notifyAddress {
+		go send(address, data)
+	}
+
+}
+
+func send(address string, data []Alert) {
+
 	client := http.Client{
 		Timeout: 5 * time.Second, // 设置连接超时时间为 5 秒
 	}
@@ -211,38 +226,7 @@ func sendToGlowworm(data []Lightning) {
 			return
 		}
 
-		// 打印响应
-		fmt.Printf("Response: %s\n", string(body))
+		glog.V(3).Infof("Response: %s\n", string(body))
 		resp.Body.Close()
-
 	}
-
-}
-
-func generateUniqueMsgID(alertInfo map[string]string) string {
-	// 对 labels 键进行排序,确保生成的 msgid 是确定的
-	keys := make([]string, 0, len(alertInfo))
-	for k := range alertInfo {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	// 拼接所有 label 值,用作 msgid 的基础
-	var sb strings.Builder
-	for _, k := range keys {
-		sb.WriteString(alertInfo[k])
-	}
-	baseStr := sb.String()
-
-	// 使用 MD5 哈希生成 msgid
-	hasher := md5.New()
-	hasher.Write([]byte(baseStr))
-	msgID := hex.EncodeToString(hasher.Sum(nil))
-
-	// 如果长度超过 18 位,则截断
-	if len(msgID) > 18 {
-		msgID = msgID[:18]
-	}
-
-	return msgID
 }

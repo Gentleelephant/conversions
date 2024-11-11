@@ -19,18 +19,6 @@ func TestName(t *testing.T) {
 				return
 			}
 
-			// 解析 JSON 数据到结构体
-			//var myData Lightning
-			//err = json.Unmarshal(body, &myData)
-			//if err != nil {
-			//	log.Println("Failed to parse JSON data:", err)
-			//	http.Error(w, "Failed to parse JSON data", http.StatusBadRequest)
-			//	return
-			//}
-			//
-			//// 打印接收到的数据
-			//fmt.Printf("Received data:%+v\n", myData)
-
 			fmt.Println(string(body))
 
 			// 响应请求

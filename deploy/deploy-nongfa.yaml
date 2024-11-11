@@ -1,0 +1,60 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: conversions
+  namespace: kubesphere-monitoring-system
+  labels:
+    app: conversions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conversions
+  template:
+    metadata:
+      labels:
+        app: conversions
+    spec:
+      containers:
+        - name: container-5kese9
+          image: 'birdhk/conversions:v0.2'
+          args:
+            - '--notifyAddress=http://10.27.0.33:1980/thirdalert/v1/firefly/thirdpartyAlert/process'
+            - '--mergeKey="entity_name,entity_addr"'
+            - '--identifyKey=entity_name,entity_addr'
+            - '--networkDomain="defaultZone"'
+            - '--port=8080'
+          ports:
+            - name: http-0
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 100m
+              memory: 50Mi
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      schedulerName: default-scheduler
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: conversions-svc
+  namespace: kubesphere-monitoring-system
+  labels:
+    app: conversions
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: conversions
+  type: ClusterIP
