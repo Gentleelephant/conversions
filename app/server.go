@@ -134,8 +134,6 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 		return
 	}
 
-	fmt.Println("alert:", alert)
-
 	for _, item := range alert.Alerts {
 		currentAlert := Alert{}
 		currentAlert.Name = item.Labels["alertname"]
@@ -199,6 +197,8 @@ func send(address string, data []Alert) {
 	address = url.Scheme + "://" + url.Host + url.Path
 
 	for _, item := range data {
+
+		fmt.Println("item:", item)
 
 		dataByte, err := json.Marshal(item)
 		if err != nil {
