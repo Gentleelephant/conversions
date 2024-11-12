@@ -59,7 +59,7 @@ func AddFlags(fs *pflag.FlagSet) {
 	fs.IntVar(&port, "port", 8080, "The port which the server listen, default 8080")
 	fs.StringVar(&mergeKey, "mergeKey", "entity_name,name", "The merge key")
 	fs.StringVar(&identifyKey, "identifyKey", "", "The identify key")
-	fs.StringVar(&networkDomain, "networkDomain", "defaultZone", "The network domain")
+	fs.StringVar(&networkDomain, "networkDomain", "", "The network domain")
 	fs.StringSliceVar(&notifyAddress, "notifyAddress", []string{}, "The addresses of send the data to")
 }
 
@@ -149,7 +149,9 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 			}
 
 		}
-		currentAlert.NetworkDomain = networkDomain
+		if networkDomain == "" {
+			currentAlert.NetworkDomain = item.Labels["cluster"]
+		}
 		currentAlert.Type = item.Labels["alerttype"]
 		if item.Labels["severity"] == "critical" {
 			currentAlert.Severity = 3
