@@ -82,10 +82,10 @@ func Run() error {
 		glog.Errorf("FLAG: --%s=%q", flag.Name, flag.Value)
 	})
 
-	fmt.Println("notifyAddress:", notifyAddress)
-	fmt.Println("mergeKey:", mergeKey)
-	fmt.Println("identifyKey:", identifyKey)
-	fmt.Println("networkDomain:", networkDomain)
+	log.Println("notifyAddress:", notifyAddress)
+	log.Println("mergeKey:", mergeKey)
+	log.Println("identifyKey:", identifyKey)
+	log.Println("networkDomain:", networkDomain)
 
 	log.Println("Starting conversions server...")
 
@@ -200,7 +200,7 @@ func send(address string, data []Alert) {
 
 	for _, item := range data {
 
-		fmt.Printf("item: %+v\n", item)
+		log.Printf("item: %+v\n", item)
 
 		dataByte, err := json.Marshal(item)
 		if err != nil {
@@ -228,7 +228,7 @@ func send(address string, data []Alert) {
 			return
 		}
 
-		glog.V(3).Infof("Response: %s\n", string(body))
+		log.Printf("Response Status Code: %d,Response: %s\n", resp.StatusCode, string(body))
 		resp.Body.Close()
 	}
 }
