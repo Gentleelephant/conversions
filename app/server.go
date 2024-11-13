@@ -140,12 +140,12 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 		currentAlert.Description = item.Annotations["message"]
 
 		if currentAlert.EntityName == "" {
-			if item.Labels["node"] != "" {
-				currentAlert.EntityName = item.Labels["node"]
-				currentAlert.EntityAddr = item.Labels["host_ip"]
-			} else if item.Labels["pod"] != "" {
+			if item.Labels["pod"] != "" {
 				currentAlert.EntityName = fmt.Sprintf("%s/%s", item.Labels["namespace"], item.Labels["pod"])
 				currentAlert.EntityAddr = item.Labels["instance"]
+			} else if item.Labels["node"] != "" {
+				currentAlert.EntityName = item.Labels["node"]
+				currentAlert.EntityAddr = item.Labels["host_ip"]
 			}
 
 		}
