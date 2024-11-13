@@ -191,12 +191,11 @@ func send(address string, data []Alert) {
 		Timeout: 5 * time.Second, // 设置连接超时时间为 5 秒
 	}
 
-	url, err := url2.Parse(address)
+	_, err := url2.Parse(address)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	address = url.Scheme + "://" + url.Host + url.Path
 
 	for _, item := range data {
 
