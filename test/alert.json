@@ -1,0 +1,54 @@
+{
+  "receiver": "webhook-receiver",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "KubePodCrashLooping",
+        "namespace": "my-app-ns",
+        "pod": "my-app-pod-12345",
+        "severity": "critical",
+        "alerttype": "kubernetes",
+        "cluster": "prod-cluster-1",
+        "instance": "10.1.2.3:8080"
+      },
+      "annotations": {
+        "message": "Pod my-app-ns/my-app-pod-12345 is in a crash loop.",
+        "summary": "Pod is restarting frequently"
+      },
+      "startsAt": "2024-05-21T10:30:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://prometheus.example.com/..."
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "KubeNodeNotReady",
+        "node": "k8s-node-01",
+        "severity": "warning",
+        "alerttype": "kubernetes",
+        "cluster": "prod-cluster-1",
+        "host_ip": "192.168.1.101"
+      },
+      "annotations": {
+        "message": "Node k8s-node-01 has been unready for more than 5 minutes.",
+        "summary": "Node is not ready"
+      },
+      "startsAt": "2024-05-21T10:32:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://prometheus.example.com/..."
+    }
+  ],
+  "groupLabels": {
+    "alertname": "TestAlerts"
+  },
+  "commonLabels": {
+    "cluster": "prod-cluster-1",
+    "alerttype": "kubernetes"
+  },
+  "commonAnnotations": {
+    "summary": "Kubernetes alert"
+  },
+  "externalURL": "http://alertmanager.example.com"
+}

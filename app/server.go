@@ -48,7 +48,7 @@ type Alert struct {
 	OccurTime     int64                    `json:"occur_time"`
 	EntityName    string                   `json:"entity_name"`
 	EntityAddr    string                   `json:"entity_addr,omitempty"`
-	MergedKey     string                   `json:"merged_key,omitempty"`
+	MergeKey      string                   `json:"merge_key,omitempty"`
 	IdentifyKey   string                   `json:"identify_key,omitempty"`
 	Type          string                   `json:"type"`
 	NetworkDomain string                   `json:"networkDomain"`
@@ -163,7 +163,7 @@ func alertHandler(req *restful.Request, resp *restful.Response) {
 			currentAlert.Severity = 0
 		}
 		currentAlert.OccurTime = item.StartsAt.UnixMilli()
-		currentAlert.MergedKey = mergeKey
+		currentAlert.MergeKey = mergeKey
 		currentAlert.IdentifyKey = identifyKey
 
 		data = append(data, currentAlert)
@@ -199,7 +199,7 @@ func send(address string, data []Alert) {
 
 	for _, item := range data {
 
-		log.Printf("item: %+v\n", item)
+		log.Printf("Received data: %+v\n", item)
 
 		dataByte, err := json.Marshal(item)
 		if err != nil {
@@ -221,13 +221,14 @@ func send(address string, data []Alert) {
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		_, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		log.Printf("Response Status Code: %d,Response: %s\n", resp.StatusCode, string(body))
+		log.Printf("Response Status Code: %d\n", resp.StatusCode)
+		log.Printf("Send Data: %s\n", string(dataByte))
 		resp.Body.Close()
 	}
 }

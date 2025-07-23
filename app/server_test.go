@@ -9,7 +9,7 @@ import (
 
 func TestName(t *testing.T) {
 	go func() {
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 			defer r.Body.Close()
 			// 打印接收到的数据
 			// 读取请求体中的数据
